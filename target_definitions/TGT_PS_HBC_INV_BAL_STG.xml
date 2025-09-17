@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Informatica PowerCenter Target Definition -->
+<!-- Oracle Table: PS_HBC_INV_BAL_STG -->
+
+<POWERMART>
+  <REPOSITORY NAME="BMO_FINANCIAL_REPO" VERSION="9.6.1" CODEPAGE="UTF-8">
+    <FOLDER NAME="BMO_BALANCE_ETL" GROUP="" OWNER="DEVELOPER" SHARED="SHARED">
+      
+      <!-- ORACLE TARGET TABLE DEFINITION -->
+      <TARGET NAME="PS_HBC_INV_BAL_STG" DATABASETYPE="Oracle" DBDNAME="$PMTargetConnection"
+              DESCRIPTION="BMO Financial Balance Staging Table" TABLEOPTIONS="TRUNCATE TABLE">
+        
+        <TARGETFIELD BUSINESSNAME="Financial Instrument ID" DATATYPE="string" FIELDNUMBER="1" 
+                     KEYTYPE="NOT A KEY" NAME="FI_INSTRUMENT_ID" NULLABLE="NOT NULL" 
+                     PRECISION="45" SCALE="0"
+                     DESCRIPTION="Constructed ID: INV + left-padded Receipt_Number"/>
+        
+        <TARGETFIELD BUSINESSNAME="Balance Type Code" DATATYPE="string" FIELDNUMBER="2" 
+                     KEYTYPE="NOT A KEY" NAME="FI_IBALTYPE_CD" NULLABLE="NULLABLE" 
+                     PRECISION="10" SCALE="0"
+                     DESCRIPTION="Balance type with newline prefix and uppercase conversion"/>
+        
+        <TARGETFIELD BUSINESSNAME="Account" DATATYPE="string" FIELDNUMBER="3" 
+                     KEYTYPE="NOT A KEY" NAME="ACCOUNT" NULLABLE="NULLABLE" 
+                     PRECISION="20" SCALE="0"
+                     DESCRIPTION="Account identifier with space default for nulls"/>
+        
+        <TARGETFIELD BUSINESSNAME="Sequence Number" DATATYPE="bigint" FIELDNUMBER="4" 
+                     KEYTYPE="NOT A KEY" NAME="SEQUENCENO" NULLABLE="NOT NULL" 
+                     PRECISION="10" SCALE="0"
+                     DESCRIPTION="Global sequence number for record ordering"/>
+        
+        <TARGETFIELD BUSINESSNAME="Transaction Date" DATATYPE="datetime" FIELDNUMBER="5" 
+                     KEYTYPE="NOT A KEY" NAME="PF_TRANS_DT" NULLABLE="NULLABLE" 
+                     PRECISION="19" SCALE="0"
+                     DESCRIPTION="Transaction date from HBC period control lookup"/>
+        
+        <TARGETFIELD BUSINESSNAME="Receipt Number" DATATYPE="string" FIELDNUMBER="6" 
+                     KEYTYPE="NOT A KEY" NAME="HBC_RECEIPT_NO" NULLABLE="NULLABLE" 
+                     PRECISION="20" SCALE="0"
+                     DESCRIPTION="Receipt number with newline prefix"/>
+        
+        <TARGETFIELD BUSINESSNAME="Balance Amount" DATATYPE="decimal" FIELDNUMBER="7" 
+                     KEYTYPE="NOT A KEY" NAME="FI_BALANCE_AMT" NULLABLE="NULLABLE" 
+                     PRECISION="15" SCALE="3"
+                     DESCRIPTION="Financial balance amount with 3 decimal precision"/>
+        
+        <!-- Table Properties -->
+        <TABLEATTRIBUTE NAME="Table Type" VALUE="TABLE"/>
+        <TABLEATTRIBUTE NAME="Owner Name" VALUE="BMO_FINANCIAL"/>
+        <TABLEATTRIBUTE NAME="Is Partitionable" VALUE="YES"/>
+        <TABLEATTRIBUTE NAME="Update Strategy" VALUE="INSERT"/>
+        
+      </TARGET>
+      
+    </FOLDER>
+  </REPOSITORY>
+</POWERMART>

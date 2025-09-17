@@ -1,0 +1,57 @@
+# Environment Variables Template for BMO Balance ETL
+# Copy this file to .env and set appropriate values for your environment
+# DO NOT commit the actual .env file with real credentials
+
+# =============================================================================
+# DATABASE CONNECTION VARIABLES
+# =============================================================================
+
+# Production Database
+export DB_USERNAME=BMO_FINANCIAL_PROD
+export DB_PASSWORD=your_secure_password_here
+export DB_HOST=bmo-db-prod-server
+export DB_PORT=1521
+export DB_SERVICE_NAME=BMOPROD
+
+# Development Database
+export DEV_DB_USERNAME=BMO_FINANCIAL_DEV
+export DEV_DB_PASSWORD=your_dev_password_here
+export DEV_DB_HOST=bmo-db-dev-server
+export DEV_DB_PORT=1521
+export DEV_DB_SERVICE=BMODEV
+
+# Test Database
+export TEST_DB_USERNAME=BMO_FINANCIAL_TEST
+export TEST_DB_PASSWORD=your_test_password_here
+export TEST_DB_HOST=bmo-db-test-server
+export TEST_DB_PORT=1521
+export TEST_DB_SERVICE=BMOTEST
+
+# =============================================================================
+# EMAIL NOTIFICATION VARIABLES
+# =============================================================================
+
+export SUCCESS_EMAIL_LIST=bmo-etl-success@yourcompany.com
+export FAILURE_EMAIL_LIST=bmo-etl-failure@yourcompany.com
+
+# =============================================================================
+# SUPPORT CONTACT VARIABLES
+# =============================================================================
+
+export ETL_SUPPORT_EMAIL=bmo-etl-support@yourcompany.com
+export DBA_SUPPORT_EMAIL=bmo-dba-support@yourcompany.com
+export INFRA_SUPPORT_EMAIL=bmo-infra-support@yourcompany.com
+export ONCALL_SUPPORT_PHONE=+1-800-YOUR-HELP
+
+# =============================================================================
+# USAGE INSTRUCTIONS
+# =============================================================================
+
+# 1. Copy this file: cp environment_variables.template .env
+# 2. Edit .env with your actual values
+# 3. Source the file before running Informatica: source .env
+# 4. Ensure .env is in your .gitignore file
+# 5. Use these variables in your parameter files and connection strings
+
+# Example usage in parameter files:
+# $PMTargetConnectionString=${DB_USERNAME}/${DB_PASSWORD}@${DB_HOST}:${DB_PORT}:${DB_SERVICE_NAME}

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Informatica PowerCenter Workflow Definition -->
+<!-- Workflow for BMO Balance ETL Pipeline -->
+
+<POWERMART>
+  <REPOSITORY NAME="BMO_FINANCIAL_REPO" VERSION="9.6.1" CODEPAGE="UTF-8">
+    <FOLDER NAME="BMO_BALANCE_ETL" GROUP="" OWNER="DEVELOPER" SHARED="SHARED">
+      
+      <!-- WORKFLOW DEFINITION -->
+      <WORKFLOW NAME="wf_BMO_Balance_ETL" DESCRIPTION="BMO Financial Balance ETL Workflow"
+                ISVALID="YES" PERSISTENTINPUTFILE="" PERSISTENTOUTPUTFILE="" 
+                REUSABLE_SCHEDULER="NO" SCHEDULERNAME="Scheduler" 
+                SERVERNAME="$PMWorkflowService" SERVER_DOMAINNAME="$PMDomain">
+        
+        <!-- WORKFLOW VARIABLES -->
+        <WORKFLOWVARIABLE DATATYPE="text" DEFAULTVALUE="$PMSourceFileDir" 
+                          DESCRIPTION="Source file directory path" 
+                          ISNULL="NO" ISPERSISTENT="NO" NAME="$$SrcFileDir"/>
+        
+        <WORKFLOWVARIABLE DATATYPE="text" DEFAULTVALUE="mrp0455_inv_gl.txt" 
+                          DESCRIPTION="Source filename" 
+                          ISNULL="NO" ISPERSISTENT="NO" NAME="$$SrcFileName"/>
+        
+        <WORKFLOWVARIABLE DATATYPE="text" DEFAULTVALUE="$PMBadFileDir" 
+                          DESCRIPTION="Reject file directory" 
+                          ISNULL="NO" ISPERSISTENT="NO" NAME="$$RejectFileDir"/>
+        
+        <!-- START TASK -->
+        <TASK DESCRIPTION="Workflow start task" NAME="Start" REUSABLE="NO" TYPE="Start" VERSIONNUMBER="1">
+          <TASKINSTANCE DESCRIPTION="Start task instance" NAME="Start" REUSABLE="NO" TYPE="Start"/>
+        </TASK>
+        
+        <!-- PRE-SESSION COMMAND TASK -->
+        <TASK DESCRIPTION="Pre-processing validation and setup" NAME="CMD_PreProcess" 
+              REUSABLE="NO" TYPE="Command" VERSIONNUMBER="1">
+          <TASKINSTANCE DESCRIPTION="Pre-processing command" NAME="CMD_PreProcess" 
+                        REUSABLE="NO" TYPE="Command">
+            <ATTRIBUTE NAME="Command" VALUE="echo 'Starting BMO Balance ETL Process...'"/>
+            <ATTRIBUTE NAME="Command Type" VALUE="UNIX"/>
+            <ATTRIBUTE NAME="Success Exit Code" VALUE="0"/>
+            <ATTRIBUTE NAME="Failure Exit Code" VALUE="1"/>
+            <ATTRIBUTE NAME="Treat Input Links As" VALUE="AND"/>
+          </TASKINSTANCE>
+        </TASK>
+        
+        <!-- FILE VALIDATION TASK -->
+        <TASK DESCRIPTION="Validate source file exists and is readable" NAME="CMD_ValidateFile" 
+              REUSABLE="NO" TYPE="Command" VERSIONNUMBER="1">
+          <TASKINSTANCE DESCRIPTION="File validation command" NAME="CMD_ValidateFile" 
+                        REUSABLE="NO" TYPE="Command">
+            <ATTRIBUTE NAME="Command" VALUE="test -f $$SrcFileDir/$$SrcFileName -a -r $$SrcFileDir/$$SrcFileName"/>
+            <ATTRIBUTE NAME="Command Type" VALUE="UNIX"/>
+            <ATTRIBUTE NAME="Success Exit Code" VALUE="0"/>
+            <ATTRIBUTE NAME="Failure Exit Code" VALUE="1"/>
+            <ATTRIBUTE NAME="Treat Input Links As" VALUE="AND"/>
+          </TASKINSTANCE>
+        </TASK>
+        
+        <!-- MAIN ETL SESSION TASK -->
+        <TASK DESCRIPTION="BMO Balance ETL Session" NAME="s_m_BMO_Balance_ETL" 
+              REUSABLE="NO" TYPE="Session" VERSIONNUMBER="1">
+          <TASKINSTANCE DESCRIPTION="Main ETL session instance" NAME="s_m_BMO_Balance_ETL" 
+                        REUSABLE="NO" TYPE="Session">
+            <ATTRIBUTE NAME="Fail Parent if this task fails" VALUE="YES"/>
+            <ATTRIBUTE NAME="Fail Parent if this task does not run" VALUE="YES"/>
+            <ATTRIBUTE NAME="Treat Input Links As" VALUE="AND"/>
+            <ATTRIBUTE NAME="Is Enabled" VALUE="YES"/>
+          </TASKINSTANCE>
+        </TASK>
+        
+        <!-- POST-SESSION SUCCESS TASK -->
+        <TASK DESCRIPTION="Post-processing success notification" NAME="CMD_PostSuccess" 
+              REUSABLE="NO" TYPE="Command" VERSIONNUMBER="1">
+          <TASKINSTANCE DESCRIPTION="Success notification command" NAME="CMD_PostSuccess" 
+                        REUSABLE="NO" TYPE="Command">
+            <ATTRIBUTE NAME="Command" VALUE="echo 'BMO Balance ETL completed successfully. Records processed: $PMSessionLogDir/s_m_BMO_Balance_ETL.log'"/>
+            <ATTRIBUTE NAME="Command Type" VALUE="UNIX"/>
+            <ATTRIBUTE NAME="Success Exit Code" VALUE="0"/>
+            <ATTRIBUTE NAME="Failure Exit Code" VALUE="1"/>
+            <ATTRIBUTE NAME="Treat Input Links As" VALUE="AND"/>
+          </TASKINSTANCE>
+        </TASK>
+        
+        <!-- POST-SESSION FAILURE TASK -->
+        <TASK DESCRIPTION="Post-processing failure notification" NAME="CMD_PostFailure" 
+              REUSABLE="NO" TYPE="Command" VERSIONNUMBER="1">
+          <TASKINSTANCE DESCRIPTION="Failure notification command" NAME="CMD_PostFailure" 
+                        REUSABLE="NO" TYPE="Command">
+            <ATTRIBUTE NAME="Command" VALUE="echo 'BMO Balance ETL failed. Check session log: $PMSessionLogDir/s_m_BMO_Balance_ETL.log'"/>
+            <ATTRIBUTE NAME="Command Type" VALUE="UNIX"/>
+            <ATTRIBUTE NAME="Success Exit Code" VALUE="0"/>
+            <ATTRIBUTE NAME="Failure Exit Code" VALUE="1"/>
+            <ATTRIBUTE NAME="Treat Input Links As" VALUE="AND"/>
+          </TASKINSTANCE>
+        </TASK>
+        
+        <!-- WORKFLOW LINKS -->
+        <WORKFLOWLINK CONDITION="" FROMTASK="Start" TOTASK="CMD_PreProcess"/>
+        <WORKFLOWLINK CONDITION="" FROMTASK="CMD_PreProcess" TOTASK="CMD_ValidateFile"/>
+        <WORKFLOWLINK CONDITION="" FROMTASK="CMD_ValidateFile" TOTASK="s_m_BMO_Balance_ETL"/>
+        <WORKFLOWLINK CONDITION="SUCCEEDED" FROMTASK="s_m_BMO_Balance_ETL" TOTASK="CMD_PostSuccess"/>
+        <WORKFLOWLINK CONDITION="FAILED" FROMTASK="s_m_BMO_Balance_ETL" TOTASK="CMD_PostFailure"/>
+        
+        <!-- SCHEDULER CONFIGURATION -->
+        <SCHEDULER DESCRIPTION="BMO Balance ETL Scheduler" NAME="Scheduler" REUSABLE="NO" 
+                   VERSIONNUMBER="1">
+          <SCHEDULEINFO SCHEDULETYPE="ONDEMAND"/>
+        </SCHEDULER>
+        
+      </WORKFLOW>
+      
+    </FOLDER>
+  </REPOSITORY>
+</POWERMART>

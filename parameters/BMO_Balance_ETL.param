@@ -1,0 +1,122 @@
+# Informatica PowerCenter Parameter File
+# BMO Financial Balance ETL Pipeline Parameters
+# File: BMO_Balance_ETL.param
+
+# =============================================================================
+# CONNECTION PARAMETERS
+# =============================================================================
+
+# Source Connection Parameters
+$PMSourceFileDir=/data/bmo/source/balance
+$PMSourceConnection=FF_BMO_Source
+
+# Target Connection Parameters  
+$PMTargetConnection=DB_BMO_Oracle
+$PMTargetConnectionString=${DB_USERNAME}/${DB_PASSWORD}@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=${DB_HOST})(PORT=${DB_PORT}))(CONNECT_DATA=(SERVICE_NAME=${DB_SERVICE_NAME})))
+
+# =============================================================================
+# DIRECTORY PARAMETERS
+# =============================================================================
+
+# Log and Reject File Directories
+$PMSessionLogDir=/data/bmo/logs/sessions
+$PMWorkflowLogDir=/data/bmo/logs/workflows
+$PMBadFileDir=/data/bmo/reject
+$PMCacheDir=/data/bmo/cache
+
+# =============================================================================
+# SERVICE PARAMETERS
+# =============================================================================
+
+# PowerCenter Service Configuration
+$PMWorkflowService=IntegrationService_BMO
+$PMDomain=Domain_BMO_PROD
+$PMRepositoryService=RepositoryService_BMO
+
+# =============================================================================
+# FILE PROCESSING PARAMETERS
+# =============================================================================
+
+# Source File Configuration
+$$SrcFileName=mrp0455_inv_gl.txt
+$$SrcFileDir=$PMSourceFileDir
+$$RejectFileDir=$PMBadFileDir
+
+# File Processing Options
+$$SkipHeaderRows=1
+$$FileDelimiter=|
+$$TextQualifier="
+$$FileEncoding=UTF-8
+
+# =============================================================================
+# SESSION PERFORMANCE PARAMETERS
+# =============================================================================
+
+# Memory and Performance Settings
+$$CommitInterval=10000
+$$DTMBufferSize=64000000
+$$IndexCacheSize=1000000
+$$DataCacheSize=2000000
+
+# Lookup Cache Settings
+$$LookupCacheSize=10000000
+$$LookupCachePersistent=NO
+
+# =============================================================================
+# ERROR HANDLING PARAMETERS
+# =============================================================================
+
+# Error Thresholds
+$$ErrorThreshold=1
+$$StopOnErrors=YES
+$$TracingLevel=Normal
+
+# Notification Settings
+$$SuccessEmailList=${SUCCESS_EMAIL_LIST}
+$$FailureEmailList=${FAILURE_EMAIL_LIST}
+
+# =============================================================================
+# BUSINESS LOGIC PARAMETERS
+# =============================================================================
+
+# Period Control Lookup
+$$HBC_PER_CTL_Value=APS
+$$DateFormat=YYYYMMDD
+
+# Field Construction Parameters
+$$InstrumentIDPrefix=INV
+$$InstrumentIDPadLength=42
+$$InstrumentIDPadChar=0
+
+# Default Values for NULL Handling
+$$DefaultSpaceValue= 
+$$DefaultAmountValue=0.000
+$$NewlineChar=CHR(10)
+
+# =============================================================================
+# AUDIT AND MONITORING PARAMETERS
+# =============================================================================
+
+# Session Monitoring
+$$EnablePerformanceData=NO
+$$SessionLogRetention=7
+$$WorkflowLogRetention=30
+
+# Recovery Settings
+$$RecoveryStrategy=RESTART_TASK
+$$CheckpointInterval=0
+
+# =============================================================================
+# ENVIRONMENT-SPECIFIC OVERRIDES
+# =============================================================================
+# Note: These parameters can be overridden at runtime or in environment-specific
+# parameter files (e.g., BMO_Balance_ETL_DEV.param, BMO_Balance_ETL_PROD.param)
+
+# Development Environment Overrides
+# $PMTargetConnectionString=${DEV_DB_USERNAME}/${DEV_DB_PASSWORD}@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=${DEV_DB_HOST})(PORT=${DEV_DB_PORT}))(CONNECT_DATA=(SERVICE_NAME=${DEV_DB_SERVICE})))
+
+# Test Environment Overrides  
+# $PMTargetConnectionString=${TEST_DB_USERNAME}/${TEST_DB_PASSWORD}@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=${TEST_DB_HOST})(PORT=${TEST_DB_PORT}))(CONNECT_DATA=(SERVICE_NAME=${TEST_DB_SERVICE})))
+
+# Production Environment Overrides
+# $PMTargetConnectionString=${PROD_DB_USERNAME}/${PROD_DB_PASSWORD}@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=${PROD_DB_HOST})(PORT=${PROD_DB_PORT}))(CONNECT_DATA=(SERVICE_NAME=${PROD_DB_SERVICE})))
