@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Informatica PowerCenter Mapping Design for Financial Balance ETL Pipeline -->
+<!-- Based on pseudo_ETL_code.txt - BMO Financial Balance Processing -->
+
+<POWERMART>
+  <REPOSITORY NAME="BMO_FINANCIAL_REPO" VERSION="9.6.1" CODEPAGE="UTF-8">
+    
+    <!-- FOLDER DEFINITION -->
+    <FOLDER NAME="BMO_BALANCE_ETL" GROUP="" OWNER="DEVELOPER" SHARED="SHARED" 
+           DESCRIPTION="Financial Balance ETL Pipeline - Informatica PowerCenter Implementation">
+      
+      <!-- SOURCE DEFINITION: Flat File mrp0455_inv_gl.txt -->
+      <SOURCE NAME="SQ_mrp0455_inv_gl" DATABASETYPE="Flat File" DBDNAME="$PMSourceFileDir">
+        <SOURCEFIELD DATATYPE="string" FIELDNUMBER="1" FIELDPROPERTY="0" 
+                     FIELDTYPE="ELEMITEM" HIDDEN="NO" KEYTYPE="NOT A KEY" 
+                     LENGTH="8" LEVEL="0" NAME="Effective_Date" NULLABLE="NULLABLE" 
+                     OCCURS="0" OFFSET="0" PRECISION="0" SCALE="0" USAGE_FLAGS=""/>
+        <SOURCEFIELD DATATYPE="string" FIELDNUMBER="2" FIELDPROPERTY="0" 
+                     FIELDTYPE="ELEMITEM" HIDDEN="NO" KEYTYPE="NOT A KEY" 
+                     LENGTH="20" LEVEL="0" NAME="Receipt_Number" NULLABLE="NULLABLE" 
+                     OCCURS="0" OFFSET="8" PRECISION="0" SCALE="0" USAGE_FLAGS=""/>
+        <SOURCEFIELD DATATYPE="string" FIELDNUMBER="3" FIELDPROPERTY="0" 
+                     FIELDTYPE="ELEMITEM" HIDDEN="NO" KEYTYPE="NOT A KEY" 
+                     LENGTH="10" LEVEL="0" NAME="Balance_Type" NULLABLE="NULLABLE" 
+                     OCCURS="0" OFFSET="28" PRECISION="0" SCALE="0" USAGE_FLAGS=""/>
+        <SOURCEFIELD DATATYPE="decimal" FIELDNUMBER="4" FIELDPROPERTY="0" 
+                     FIELDTYPE="ELEMITEM" HIDDEN="NO" KEYTYPE="NOT A KEY" 
+                     LENGTH="15" LEVEL="0" NAME="Amount" NULLABLE="NULLABLE" 
+                     OCCURS="0" OFFSET="38" PRECISION="15" SCALE="3" USAGE_FLAGS=""/>
+        <SOURCEFIELD DATATYPE="string" FIELDNUMBER="5" FIELDPROPERTY="0" 
+                     FIELDTYPE="ELEMITEM" HIDDEN="NO" KEYTYPE="NOT A KEY" 
+                     LENGTH="20" LEVEL="0" NAME="Account" NULLABLE="NULLABLE" 
+                     OCCURS="0" OFFSET="53" PRECISION="0" SCALE="0" USAGE_FLAGS=""/>
+      </SOURCE>
+
+      <!-- TARGET DEFINITION: PS_HBC_INV_BAL_STG Table -->
+      <TARGET NAME="PS_HBC_INV_BAL_STG" DATABASETYPE="Oracle" TABLEOPTIONS="TRUNCATE TABLE">
+        <TARGETFIELD BUSINESSNAME="" DATATYPE="string" FIELDNUMBER="1" 
+                     KEYTYPE="NOT A KEY" NAME="FI_INSTRUMENT_ID" NULLABLE="NOT NULL" 
+                     PRECISION="45" SCALE="0"/>
+        <TARGETFIELD BUSINESSNAME="" DATATYPE="string" FIELDNUMBER="2" 
+                     KEYTYPE="NOT A KEY" NAME="FI_IBALTYPE_CD" NULLABLE="NULLABLE" 
+                     PRECISION="10" SCALE="0"/>
+        <TARGETFIELD BUSINESSNAME="" DATATYPE="string" FIELDNUMBER="3" 
+                     KEYTYPE="NOT A KEY" NAME="ACCOUNT" NULLABLE="NULLABLE" 
+                     PRECISION="20" SCALE="0"/>
+        <TARGETFIELD BUSINESSNAME="" DATATYPE="bigint" FIELDNUMBER="4" 
+                     KEYTYPE="NOT A KEY" NAME="SEQUENCENO" NULLABLE="NOT NULL" 
+                     PRECISION="10" SCALE="0"/>
+        <TARGETFIELD BUSINESSNAME="" DATATYPE="datetime" FIELDNUMBER="5" 
+                     KEYTYPE="NOT A KEY" NAME="PF_TRANS_DT" NULLABLE="NULLABLE" 
+                     PRECISION="19" SCALE="0"/>
+        <TARGETFIELD BUSINESSNAME="" DATATYPE="string" FIELDNUMBER="6" 
+                     KEYTYPE="NOT A KEY" NAME="HBC_RECEIPT_NO" NULLABLE="NULLABLE" 
+                     PRECISION="20" SCALE="0"/>
+        <TARGETFIELD BUSINESSNAME="" DATATYPE="decimal" FIELDNUMBER="7" 
+                     KEYTYPE="NOT A KEY" NAME="FI_BALANCE_AMT" NULLABLE="NULLABLE" 
+                     PRECISION="15" SCALE="3"/>
+      </TARGET>
+
+      <!-- LOOKUP TABLE DEFINITION: PS_HBC_PERIOD_CTL -->
+      <SOURCE NAME="LKP_PS_HBC_PERIOD_CTL" DATABASETYPE="Oracle" DBDNAME="$PMTargetConnection">
+        <SOURCEFIELD DATATYPE="string" FIELDNUMBER="1" FIELDPROPERTY="0" 
+                     FIELDTYPE="ELEMITEM" HIDDEN="NO" KEYTYPE="NOT A KEY" 
+                     LENGTH="10" LEVEL="0" NAME="HBC_PER_CTL" NULLABLE="NULLABLE" 
+                     OCCURS="0" PRECISION="0" SCALE="0" USAGE_FLAGS=""/>
+        <SOURCEFIELD DATATYPE="datetime" FIELDNUMBER="2" FIELDPROPERTY="0" 
+                     FIELDTYPE="ELEMITEM" HIDDEN="NO" KEYTYPE="NOT A KEY" 
+                     LENGTH="19" LEVEL="0" NAME="HBC_DATA_DATE" NULLABLE="NULLABLE" 
+                     OCCURS="0" PRECISION="0" SCALE="0" USAGE_FLAGS=""/>
+      </SOURCE>
+
+      <!-- SEQUENCE GENERATOR: Global ROW_COUNT -->
+      <TRANSFORMATION NAME="SEQ_ROW_COUNT" TYPE="Sequence Generator">
+        <TRANSFORMFIELD DATATYPE="bigint" DEFAULTVALUE="" FIELDNUMBER="1" 
+                        FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                        KEYTYPE="NOT A KEY" LENGTH="10" LEVEL="0" NAME="NEXTVAL" 
+                        NULLABLE="NOT NULL" OCCURS="0" PRECISION="10" SCALE="0" 
+                        USAGE_FLAGS="OUTPUT"/>
+        <TABLEATTRIBUTE NAME="Start Value" VALUE="1"/>
+        <TABLEATTRIBUTE NAME="Increment By" VALUE="1"/>
+        <TABLEATTRIBUTE NAME="End Value" VALUE="9999999999"/>
+        <TABLEATTRIBUTE NAME="Current Value" VALUE="0"/>
+        <TABLEATTRIBUTE NAME="Cycle" VALUE="NO"/>
+        <TABLEATTRIBUTE NAME="Reset" VALUE="NO"/>
+        <TABLEATTRIBUTE NAME="Number of Cached Values" VALUE="1000"/>
+      </TRANSFORMATION>
+
+      <!-- MAPPING DEFINITION -->
+      <MAPPING NAME="m_BMO_Balance_ETL" DESCRIPTION="Financial Balance ETL Pipeline - PowerCenter Implementation" 
+               ISVALID="YES" OBJECTVERSION="1">
+        
+        <!-- SOURCE QUALIFIER TRANSFORMATION -->
+        <TRANSFORMATION NAME="SQ_mrp0455_inv_gl" TYPE="Source Qualifier">
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="1" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="8" LEVEL="0" NAME="Effective_Date" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="INPUT/OUTPUT"/>
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="2" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="20" LEVEL="0" NAME="Receipt_Number" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="INPUT/OUTPUT"/>
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="3" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="10" LEVEL="0" NAME="Balance_Type" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="INPUT/OUTPUT"/>
+          <TRANSFORMFIELD DATATYPE="decimal" DEFAULTVALUE="" FIELDNUMBER="4" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="15" LEVEL="0" NAME="Amount" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="15" SCALE="3" 
+                          USAGE_FLAGS="INPUT/OUTPUT"/>
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="5" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="20" LEVEL="0" NAME="Account" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="INPUT/OUTPUT"/>
+          <TABLEATTRIBUTE NAME="Sql Query" VALUE=""/>
+          <TABLEATTRIBUTE NAME="User Defined Join" VALUE=""/>
+          <TABLEATTRIBUTE NAME="Source Filter" VALUE=""/>
+          <TABLEATTRIBUTE NAME="Number Of Sorted Ports" VALUE="0"/>
+          <TABLEATTRIBUTE NAME="Tracing Level" VALUE="Normal"/>
+        </TRANSFORMATION>
+
+        <!-- FILTER TRANSFORMATION: Remove NULL Receipt Numbers -->
+        <TRANSFORMATION NAME="FIL_Remove_Null_Receipts" TYPE="Filter">
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="1" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="8" LEVEL="0" NAME="Effective_Date" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="INPUT/OUTPUT"/>
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="2" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="20" LEVEL="0" NAME="Receipt_Number" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="INPUT/OUTPUT"/>
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="3" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="10" LEVEL="0" NAME="Balance_Type" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="INPUT/OUTPUT"/>
+          <TRANSFORMFIELD DATATYPE="decimal" DEFAULTVALUE="" FIELDNUMBER="4" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="15" LEVEL="0" NAME="Amount" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="15" SCALE="3" 
+                          USAGE_FLAGS="INPUT/OUTPUT"/>
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="5" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="20" LEVEL="0" NAME="Account" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="INPUT/OUTPUT"/>
+          <TABLEATTRIBUTE NAME="Filter Condition" VALUE="NOT ISNULL(Receipt_Number)"/>
+          <TABLEATTRIBUTE NAME="Tracing Level" VALUE="Normal"/>
+        </TRANSFORMATION>
+
+        <!-- EXPRESSION TRANSFORMATION: Build Lookup Inputs -->
+        <TRANSFORMATION NAME="EXP_Build_For_Lookups" TYPE="Expression">
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="1" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="8" LEVEL="0" NAME="Effective_Date" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="INPUT/OUTPUT"/>
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="2" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="20" LEVEL="0" NAME="Receipt_Number" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="INPUT/OUTPUT"/>
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="3" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="10" LEVEL="0" NAME="Balance_Type" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="INPUT/OUTPUT"/>
+          <TRANSFORMFIELD DATATYPE="decimal" DEFAULTVALUE="" FIELDNUMBER="4" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="15" LEVEL="0" NAME="Amount" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="15" SCALE="3" 
+                          USAGE_FLAGS="INPUT/OUTPUT"/>
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="5" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="20" LEVEL="0" NAME="Account" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="INPUT/OUTPUT"/>
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="6" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="10" LEVEL="0" NAME="lkp_HBC_PER_CTL" 
+                          NULLABLE="NOT NULL" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="OUTPUT"/>
+          <TABLEATTRIBUTE NAME="Expression" VALUE="lkp_HBC_PER_CTL = RTRIM('APS')"/>
+          <TABLEATTRIBUTE NAME="Tracing Level" VALUE="Normal"/>
+        </TRANSFORMATION>
+
+        <!-- LOOKUP TRANSFORMATION: PS_HBC_PERIOD_CTL -->
+        <TRANSFORMATION NAME="LKP_HBC_PERIOD_CTL" TYPE="Lookup">
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="1" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="10" LEVEL="0" NAME="lkp_HBC_PER_CTL" 
+                          NULLABLE="NOT NULL" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="INPUT"/>
+          <TRANSFORMFIELD DATATYPE="datetime" DEFAULTVALUE="" FIELDNUMBER="2" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="19" LEVEL="0" NAME="HBC_DATA_DATE" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="OUTPUT"/>
+          <TABLEATTRIBUTE NAME="Sql Override" VALUE="SELECT HBC_DATA_DATE FROM PS_HBC_PERIOD_CTL WHERE RTRIM(HBC_PER_CTL) = ?"/>
+          <TABLEATTRIBUTE NAME="Lookup Policy On Multiple Match" VALUE="Use First Value"/>
+          <TABLEATTRIBUTE NAME="Lookup Policy On Null Lookup" VALUE="Ignore Null Values"/>
+          <TABLEATTRIBUTE NAME="Lookup Caching" VALUE="Enabled"/>
+          <TABLEATTRIBUTE NAME="Lookup Cache Persistent" VALUE="Disabled"/>
+          <TABLEATTRIBUTE NAME="Lookup Cache Recache From Database" VALUE="Disabled"/>
+          <TABLEATTRIBUTE NAME="Tracing Level" VALUE="Normal"/>
+        </TRANSFORMATION>
+
+        <!-- EXPRESSION TRANSFORMATION: Date Validation and Field Construction -->
+        <TRANSFORMATION NAME="EXP_Check_Date_Build_Table" TYPE="Expression">
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="1" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="8" LEVEL="0" NAME="Effective_Date" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="INPUT"/>
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="2" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="20" LEVEL="0" NAME="Receipt_Number" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="INPUT"/>
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="3" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="10" LEVEL="0" NAME="Balance_Type" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="INPUT"/>
+          <TRANSFORMFIELD DATATYPE="decimal" DEFAULTVALUE="" FIELDNUMBER="4" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="15" LEVEL="0" NAME="Amount" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="15" SCALE="3" 
+                          USAGE_FLAGS="INPUT"/>
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="5" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="20" LEVEL="0" NAME="Account" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="INPUT"/>
+          <TRANSFORMFIELD DATATYPE="datetime" DEFAULTVALUE="" FIELDNUMBER="6" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="19" LEVEL="0" NAME="HBC_DATA_DATE" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="INPUT"/>
+          <TRANSFORMFIELD DATATYPE="bigint" DEFAULTVALUE="" FIELDNUMBER="7" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="10" LEVEL="0" NAME="NEXTVAL" 
+                          NULLABLE="NOT NULL" OCCURS="0" PRECISION="10" SCALE="0" 
+                          USAGE_FLAGS="INPUT"/>
+          
+          <!-- Variable Ports -->
+          <TRANSFORMFIELD DATATYPE="datetime" DEFAULTVALUE="" FIELDNUMBER="8" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="19" LEVEL="0" NAME="var_Header_Date" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="VARIABLE"/>
+          
+          <!-- Output Ports -->
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="9" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="45" LEVEL="0" NAME="FI_INSTRUMENT_ID" 
+                          NULLABLE="NOT NULL" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="OUTPUT"/>
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="10" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="10" LEVEL="0" NAME="FI_IBALTYPE_CD" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="OUTPUT"/>
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="11" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="20" LEVEL="0" NAME="ACCOUNT" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="OUTPUT"/>
+          <TRANSFORMFIELD DATATYPE="bigint" DEFAULTVALUE="" FIELDNUMBER="12" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="10" LEVEL="0" NAME="SEQUENCENO" 
+                          NULLABLE="NOT NULL" OCCURS="0" PRECISION="10" SCALE="0" 
+                          USAGE_FLAGS="OUTPUT"/>
+          <TRANSFORMFIELD DATATYPE="datetime" DEFAULTVALUE="" FIELDNUMBER="13" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="19" LEVEL="0" NAME="PF_TRANS_DT" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="OUTPUT"/>
+          <TRANSFORMFIELD DATATYPE="string" DEFAULTVALUE="" FIELDNUMBER="14" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="20" LEVEL="0" NAME="HBC_RECEIPT_NO" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="0" SCALE="0" 
+                          USAGE_FLAGS="OUTPUT"/>
+          <TRANSFORMFIELD DATATYPE="decimal" DEFAULTVALUE="" FIELDNUMBER="15" 
+                          FIELDPROPERTY="0" FIELDTYPE="ELEMITEM" HIDDEN="NO" 
+                          KEYTYPE="NOT A KEY" LENGTH="15" LEVEL="0" NAME="FI_BALANCE_AMT" 
+                          NULLABLE="NULLABLE" OCCURS="0" PRECISION="15" SCALE="3" 
+                          USAGE_FLAGS="OUTPUT"/>
+
+          <!-- Expression Logic -->
+          <TABLEATTRIBUTE NAME="Expression" VALUE="
+            -- Variable: Parse effective date from string
+            var_Header_Date = TO_DATE(Effective_Date, 'YYYYMMDD')
+            
+            -- Date validation with abort logic
+            IIF(var_Header_Date != HBC_DATA_DATE, 
+                ABORT('Intrader Effective Date does not equal the HBC_DATA_DATE on the APS Period Control row'), 
+                NULL)
+            
+            -- Output Field Expressions:
+            FI_INSTRUMENT_ID = 'INV' || LPAD(Receipt_Number, 42, '0')
+            
+            FI_IBALTYPE_CD = IIF(ISNULL(Balance_Type), 
+                                ' ', 
+                                CHR(10) || UPPER(Balance_Type))
+            
+            ACCOUNT = IIF(ISNULL(Account), ' ', Account)
+            
+            SEQUENCENO = NEXTVAL
+            
+            PF_TRANS_DT = HBC_DATA_DATE
+            
+            HBC_RECEIPT_NO = IIF(ISNULL(Receipt_Number), 
+                                ' ', 
+                                CHR(10) || Receipt_Number)
+            
+            FI_BALANCE_AMT = IIF(ISNULL(Amount), 
+                                0.000, 
+                                TO_DECIMAL(Amount, 15, 3))
+          "/>
+          <TABLEATTRIBUTE NAME="Tracing Level" VALUE="Normal"/>
+        </TRANSFORMATION>
+
+        <!-- CONNECTOR DEFINITIONS -->
+        <CONNECTOR FROMFIELD="Effective_Date" FROMINSTANCE="SQ_mrp0455_inv_gl" 
+                   FROMINSTANCETYPE="Source Qualifier" TOFIELD="Effective_Date" 
+                   TOINSTANCE="FIL_Remove_Null_Receipts" TOINSTANCETYPE="Filter"/>
+        <CONNECTOR FROMFIELD="Receipt_Number" FROMINSTANCE="SQ_mrp0455_inv_gl" 
+                   FROMINSTANCETYPE="Source Qualifier" TOFIELD="Receipt_Number" 
+                   TOINSTANCE="FIL_Remove_Null_Receipts" TOINSTANCETYPE="Filter"/>
+        <CONNECTOR FROMFIELD="Balance_Type" FROMINSTANCE="SQ_mrp0455_inv_gl" 
+                   FROMINSTANCETYPE="Source Qualifier" TOFIELD="Balance_Type" 
+                   TOINSTANCE="FIL_Remove_Null_Receipts" TOINSTANCETYPE="Filter"/>
+        <CONNECTOR FROMFIELD="Amount" FROMINSTANCE="SQ_mrp0455_inv_gl" 
+                   FROMINSTANCETYPE="Source Qualifier" TOFIELD="Amount" 
+                   TOINSTANCE="FIL_Remove_Null_Receipts" TOINSTANCETYPE="Filter"/>
+        <CONNECTOR FROMFIELD="Account" FROMINSTANCE="SQ_mrp0455_inv_gl" 
+                   FROMINSTANCETYPE="Source Qualifier" TOFIELD="Account" 
+                   TOINSTANCE="FIL_Remove_Null_Receipts" TOINSTANCETYPE="Filter"/>
+
+        <CONNECTOR FROMFIELD="Effective_Date" FROMINSTANCE="FIL_Remove_Null_Receipts" 
+                   FROMINSTANCETYPE="Filter" TOFIELD="Effective_Date" 
+                   TOINSTANCE="EXP_Build_For_Lookups" TOINSTANCETYPE="Expression"/>
+        <CONNECTOR FROMFIELD="Receipt_Number" FROMINSTANCE="FIL_Remove_Null_Receipts" 
+                   FROMINSTANCETYPE="Filter" TOFIELD="Receipt_Number" 
+                   TOINSTANCE="EXP_Build_For_Lookups" TOINSTANCETYPE="Expression"/>
+        <CONNECTOR FROMFIELD="Balance_Type" FROMINSTANCE="FIL_Remove_Null_Receipts" 
+                   FROMINSTANCETYPE="Filter" TOFIELD="Balance_Type" 
+                   TOINSTANCE="EXP_Build_For_Lookups" TOINSTANCETYPE="Expression"/>
+        <CONNECTOR FROMFIELD="Amount" FROMINSTANCE="FIL_Remove_Null_Receipts" 
+                   FROMINSTANCETYPE="Filter" TOFIELD="Amount" 
+                   TOINSTANCE="EXP_Build_For_Lookups" TOINSTANCETYPE="Expression"/>
+        <CONNECTOR FROMFIELD="Account" FROMINSTANCE="FIL_Remove_Null_Receipts" 
+                   FROMINSTANCETYPE="Filter" TOFIELD="Account" 
+                   TOINSTANCE="EXP_Build_For_Lookups" TOINSTANCETYPE="Expression"/>
+
+        <CONNECTOR FROMFIELD="lkp_HBC_PER_CTL" FROMINSTANCE="EXP_Build_For_Lookups" 
+                   FROMINSTANCETYPE="Expression" TOFIELD="lkp_HBC_PER_CTL" 
+                   TOINSTANCE="LKP_HBC_PERIOD_CTL" TOINSTANCETYPE="Lookup"/>
+
+        <CONNECTOR FROMFIELD="Effective_Date" FROMINSTANCE="EXP_Build_For_Lookups" 
+                   FROMINSTANCETYPE="Expression" TOFIELD="Effective_Date" 
+                   TOINSTANCE="EXP_Check_Date_Build_Table" TOINSTANCETYPE="Expression"/>
+        <CONNECTOR FROMFIELD="Receipt_Number" FROMINSTANCE="EXP_Build_For_Lookups" 
+                   FROMINSTANCETYPE="Expression" TOFIELD="Receipt_Number" 
+                   TOINSTANCE="EXP_Check_Date_Build_Table" TOINSTANCETYPE="Expression"/>
+        <CONNECTOR FROMFIELD="Balance_Type" FROMINSTANCE="EXP_Build_For_Lookups" 
+                   FROMINSTANCETYPE="Expression" TOFIELD="Balance_Type" 
+                   TOINSTANCE="EXP_Check_Date_Build_Table" TOINSTANCETYPE="Expression"/>
+        <CONNECTOR FROMFIELD="Amount" FROMINSTANCE="EXP_Build_For_Lookups" 
+                   FROMINSTANCETYPE="Expression" TOFIELD="Amount" 
+                   TOINSTANCE="EXP_Check_Date_Build_Table" TOINSTANCETYPE="Expression"/>
+        <CONNECTOR FROMFIELD="Account" FROMINSTANCE="EXP_Build_For_Lookups" 
+                   FROMINSTANCETYPE="Expression" TOFIELD="Account" 
+                   TOINSTANCE="EXP_Check_Date_Build_Table" TOINSTANCETYPE="Expression"/>
+
+        <CONNECTOR FROMFIELD="HBC_DATA_DATE" FROMINSTANCE="LKP_HBC_PERIOD_CTL" 
+                   FROMINSTANCETYPE="Lookup" TOFIELD="HBC_DATA_DATE" 
+                   TOINSTANCE="EXP_Check_Date_Build_Table" TOINSTANCETYPE="Expression"/>
+
+        <CONNECTOR FROMFIELD="NEXTVAL" FROMINSTANCE="SEQ_ROW_COUNT" 
+                   FROMINSTANCETYPE="Sequence Generator" TOFIELD="NEXTVAL" 
+                   TOINSTANCE="EXP_Check_Date_Build_Table" TOINSTANCETYPE="Expression"/>
+
+        <CONNECTOR FROMFIELD="FI_INSTRUMENT_ID" FROMINSTANCE="EXP_Check_Date_Build_Table" 
+                   FROMINSTANCETYPE="Expression" TOFIELD="FI_INSTRUMENT_ID" 
+                   TOINSTANCE="PS_HBC_INV_BAL_STG" TOINSTANCETYPE="Target"/>
+        <CONNECTOR FROMFIELD="FI_IBALTYPE_CD" FROMINSTANCE="EXP_Check_Date_Build_Table" 
+                   FROMINSTANCETYPE="Expression" TOFIELD="FI_IBALTYPE_CD" 
+                   TOINSTANCE="PS_HBC_INV_BAL_STG" TOINSTANCETYPE="Target"/>
+        <CONNECTOR FROMFIELD="ACCOUNT" FROMINSTANCE="EXP_Check_Date_Build_Table" 
+                   FROMINSTANCETYPE="Expression" TOFIELD="ACCOUNT" 
+                   TOINSTANCE="PS_HBC_INV_BAL_STG" TOINSTANCETYPE="Target"/>
+        <CONNECTOR FROMFIELD="SEQUENCENO" FROMINSTANCE="EXP_Check_Date_Build_Table" 
+                   FROMINSTANCETYPE="Expression" TOFIELD="SEQUENCENO" 
+                   TOINSTANCE="PS_HBC_INV_BAL_STG" TOINSTANCETYPE="Target"/>
+        <CONNECTOR FROMFIELD="PF_TRANS_DT" FROMINSTANCE="EXP_Check_Date_Build_Table" 
+                   FROMINSTANCETYPE="Expression" TOFIELD="PF_TRANS_DT" 
+                   TOINSTANCE="PS_HBC_INV_BAL_STG" TOINSTANCETYPE="Target"/>
+        <CONNECTOR FROMFIELD="HBC_RECEIPT_NO" FROMINSTANCE="EXP_Check_Date_Build_Table" 
+                   FROMINSTANCETYPE="Expression" TOFIELD="HBC_RECEIPT_NO" 
+                   TOINSTANCE="PS_HBC_INV_BAL_STG" TOINSTANCETYPE="Target"/>
+        <CONNECTOR FROMFIELD="FI_BALANCE_AMT" FROMINSTANCE="EXP_Check_Date_Build_Table" 
+                   FROMINSTANCETYPE="Expression" TOFIELD="FI_BALANCE_AMT" 
+                   TOINSTANCE="PS_HBC_INV_BAL_STG" TOINSTANCETYPE="Target"/>
+
+      </MAPPING>
+    </FOLDER>
+  </REPOSITORY>
+</POWERMART>

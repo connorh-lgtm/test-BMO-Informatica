@@ -1,0 +1,124 @@
+ // Global row counter for sequencing
+var ROW_COUNT := 0
+
+// Entry point of the mapping
+function process_mapping():
+    for each record in read_source_file():
+        // 1. Extract source fields
+        data := {
+            Effective_Date   : record.Effective_Date,
+            Receipt_Number   : record.Receipt_Number,
+            Balance_Type     : record.Balance_Type,
+            Amount           : record.Amount,
+            Account          : record.Account
+        }
+
+        // 2. Filter out rows with NULL receipt number
+        if not filter_rows(data):
+            continue
+
+        // 3. Build inputs for lookup
+        lookup_input := exp_build_for_lookups(data)
+
+        // 4. Perform lookup to retrieve HBC_DATA_DATE
+        lookup_input.HBC_DATA_DATE := lookup_HBC_PERIOD_CTL(lookup_input.lkp_HBC_PER_CTL)
+
+        // 5. Apply business logic, increment sequence, and construct target fields
+        output := exp_check_date_build_table(lookup_input)
+
+        // 6. Load the row into target table
+        load_target(output)
+
+    end for
+end function
+
+
+// --- Transformation Definitions ---
+
+
+// Filter transformation: passes only non‐null receipts
+function filter_rows(data):
+    return data.Receipt_Number is not NULL
+end function
+
+
+// Expression transformation: prepares lookup input
+function exp_build_for_lookups(data):
+    return {
+        Effective_Date   : data.Effective_Date,
+        Receipt_Number   : data.Receipt_Number,
+        Balance_Type     : data.Balance_Type,
+        Amount           : data.Amount,
+        Account          : data.Account,
+        // constant input for period‐control lookup
+        lkp_HBC_PER_CTL  : rtrim("APS")
+    }
+end function
+
+
+// Lookup transformation: fetches control‐period date
+function lookup_HBC_PERIOD_CTL(in_HBC_PER_CTL):
+    // SQL override:
+    // SELECT HBC_DATA_DATE
+    //   FROM PS_HBC_PERIOD_CTL
+    //  WHERE RTRIM(HBC_PER_CTL) = in_HBC_PER_CTL
+    return execute_sql_and_get_single_value(...)
+end function
+
+
+// Expression transformation: validates dates, increments row counter, builds target columns
+function exp_check_date_build_table(input):
+    // Parse effective date from string
+    var_Header_Date := to_date(input.Effective_Date, "YYYYMMDD")
+
+    // Abort if dates do not match
+    if var_Header_Date != input.HBC_DATA_DATE:
+        abort("Intrader Effective Date does not equal the HBC_DATA_DATE on the APS Period Control row")
+
+    // Increment global sequence
+    ROW_COUNT := ROW_COUNT + 1
+
+    // Build output record
+    return {
+        FI_INSTRUMENT_ID : "INV" + lpad(input.Receipt_Number, 42, "0"),
+        FI_IBALTYPE_CD   : if input.Balance_Type is NULL
+                            then " "
+                            else "\n" + upper(input.Balance_Type),
+        ACCOUNT          : if input.Account is NULL
+                            then " "
+                            else input.Account,
+        SEQUENCENO       : ROW_COUNT,
+        PF_TRANS_DT      : input.HBC_DATA_DATE,
+        HBC_RECEIPT_NO   : if input.Receipt_Number is NULL
+                            then " "
+                            else "\n" + input.Receipt_Number,
+        FI_BALANCE_AMT   : if input.Amount is NULL
+                            then 0.000
+                            else to_decimal(input.Amount, 3)
+    }
+end function
+
+
+// Target loading: inserts or updates the target table row
+function load_target(output):
+    // INSERT INTO PS_HBC_INV_BAL_STG (
+    //   FI_INSTRUMENT_ID,
+    //   FI_IBALTYPE_CD,
+    //   ACCOUNT,
+    //   SEQUENCENO,
+    //   PF_TRANS_DT,
+    //   HBC_RECEIPT_NO,
+    //   FI_BALANCE_AMT
+    // ) VALUES ( ... )
+    execute_target_insert(output)
+end function
+
+
+// Utility: reads from the flat‐file source “Balance”
+function read_source_file():
+    // Open the file mrp0455_inv_gl.txt
+    // Parse each line into a record with fields:
+    //   Effective_Date, Receipt_Number, Balance_Type, Amount, Account
+    // Skip header row
+    yield each record
+end function
