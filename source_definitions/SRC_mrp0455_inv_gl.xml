@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Informatica PowerCenter Source Definition -->
+<!-- Flat File Source: mrp0455_inv_gl.txt -->
+
+<POWERMART>
+  <REPOSITORY NAME="BMO_FINANCIAL_REPO" VERSION="9.6.1" CODEPAGE="UTF-8">
+    <FOLDER NAME="BMO_BALANCE_ETL" GROUP="" OWNER="DEVELOPER" SHARED="SHARED">
+      
+      <!-- FLAT FILE SOURCE DEFINITION -->
+      <SOURCE NAME="mrp0455_inv_gl" DATABASETYPE="Flat File" DBDNAME="$PMSourceFileDir"
+              DESCRIPTION="BMO Financial Balance Data - Daily GL Extract">
+        
+        <!-- File Properties -->
+        <SOURCEFIELD DATATYPE="string" FIELDNUMBER="1" FIELDPROPERTY="0" 
+                     FIELDTYPE="ELEMITEM" HIDDEN="NO" KEYTYPE="NOT A KEY" 
+                     LENGTH="8" LEVEL="0" NAME="Effective_Date" NULLABLE="NULLABLE" 
+                     OCCURS="0" OFFSET="0" PRECISION="0" SCALE="0" USAGE_FLAGS=""
+                     DESCRIPTION="Transaction effective date in YYYYMMDD format"/>
+        
+        <SOURCEFIELD DATATYPE="string" FIELDNUMBER="2" FIELDPROPERTY="0" 
+                     FIELDTYPE="ELEMITEM" HIDDEN="NO" KEYTYPE="NOT A KEY" 
+                     LENGTH="20" LEVEL="0" NAME="Receipt_Number" NULLABLE="NULLABLE" 
+                     OCCURS="0" OFFSET="8" PRECISION="0" SCALE="0" USAGE_FLAGS=""
+                     DESCRIPTION="Unique receipt identifier for financial instrument"/>
+        
+        <SOURCEFIELD DATATYPE="string" FIELDNUMBER="3" FIELDPROPERTY="0" 
+                     FIELDTYPE="ELEMITEM" HIDDEN="NO" KEYTYPE="NOT A KEY" 
+                     LENGTH="10" LEVEL="0" NAME="Balance_Type" NULLABLE="NULLABLE" 
+                     OCCURS="0" OFFSET="28" PRECISION="0" SCALE="0" USAGE_FLAGS=""
+                     DESCRIPTION="Type of balance (e.g., DEBIT, CREDIT)"/>
+        
+        <SOURCEFIELD DATATYPE="decimal" FIELDNUMBER="4" FIELDPROPERTY="0" 
+                     FIELDTYPE="ELEMITEM" HIDDEN="NO" KEYTYPE="NOT A KEY" 
+                     LENGTH="15" LEVEL="0" NAME="Amount" NULLABLE="NULLABLE" 
+                     OCCURS="0" OFFSET="38" PRECISION="15" SCALE="3" USAGE_FLAGS=""
+                     DESCRIPTION="Financial amount with 3 decimal precision"/>
+        
+        <SOURCEFIELD DATATYPE="string" FIELDNUMBER="5" FIELDPROPERTY="0" 
+                     FIELDTYPE="ELEMITEM" HIDDEN="NO" KEYTYPE="NOT A KEY" 
+                     LENGTH="20" LEVEL="0" NAME="Account" NULLABLE="NULLABLE" 
+                     OCCURS="0" OFFSET="53" PRECISION="0" SCALE="0" USAGE_FLAGS=""
+                     DESCRIPTION="Account identifier"/>
+        
+        <!-- File Format Properties -->
+        <TABLEATTRIBUTE NAME="File Type" VALUE="Delimited"/>
+        <TABLEATTRIBUTE NAME="Delimiter" VALUE="|"/>
+        <TABLEATTRIBUTE NAME="Text Qualifier" VALUE="&quot;"/>
+        <TABLEATTRIBUTE NAME="Header Options" VALUE="Skip Header"/>
+        <TABLEATTRIBUTE NAME="Number of Header Rows to Skip" VALUE="1"/>
+        <TABLEATTRIBUTE NAME="Code Page" VALUE="UTF-8"/>
+        <TABLEATTRIBUTE NAME="Is Partitionable" VALUE="YES"/>
+        
+      </SOURCE>
+      
+    </FOLDER>
+  </REPOSITORY>
+</POWERMART>

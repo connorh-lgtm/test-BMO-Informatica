@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Informatica PowerCenter Session Configuration -->
+<!-- Session for BMO Balance ETL Mapping -->
+
+<POWERMART>
+  <REPOSITORY NAME="BMO_FINANCIAL_REPO" VERSION="9.6.1" CODEPAGE="UTF-8">
+    <FOLDER NAME="BMO_BALANCE_ETL" GROUP="" OWNER="DEVELOPER" SHARED="SHARED">
+      
+      <!-- SESSION DEFINITION -->
+      <SESSION NAME="s_m_BMO_Balance_ETL" MAPPINGNAME="m_BMO_Balance_ETL" 
+               DESCRIPTION="Session for BMO Financial Balance ETL Pipeline"
+               ISVALID="YES" REUSABLE_SCHEDULER="NO">
+        
+        <!-- SESSION PROPERTIES -->
+        <SESSTRANS MAPPINGNAME="m_BMO_Balance_ETL" PARTITIONTYPE="PASS THROUGH" 
+                   SESSINSTANCENAME="s_m_BMO_Balance_ETL"/>
+        
+        <!-- SOURCE INSTANCE PROPERTIES -->
+        <SESSINSTANCENAME="SQ_mrp0455_inv_gl">
+          <ATTRIBUTE NAME="Source file directory" VALUE="$PMSourceFileDir"/>
+          <ATTRIBUTE NAME="Source filename" VALUE="mrp0455_inv_gl.txt"/>
+          <ATTRIBUTE NAME="Reject file directory" VALUE="$PMBadFileDir"/>
+          <ATTRIBUTE NAME="Reject filename" VALUE="mrp0455_inv_gl.bad"/>
+        </SESSINSTANCENAME>
+        
+        <!-- TARGET INSTANCE PROPERTIES -->
+        <SESSINSTANCENAME="PS_HBC_INV_BAL_STG">
+          <ATTRIBUTE NAME="Connection Name" VALUE="$PMTargetConnection"/>
+          <ATTRIBUTE NAME="Target load type" VALUE="Normal"/>
+          <ATTRIBUTE NAME="Insert" VALUE="YES"/>
+          <ATTRIBUTE NAME="Update" VALUE="NO"/>
+          <ATTRIBUTE NAME="Delete" VALUE="NO"/>
+          <ATTRIBUTE NAME="Truncate target table" VALUE="YES"/>
+        </SESSINSTANCENAME>
+        
+        <!-- LOOKUP INSTANCE PROPERTIES -->
+        <SESSINSTANCENAME="LKP_HBC_PERIOD_CTL">
+          <ATTRIBUTE NAME="Connection Name" VALUE="$PMTargetConnection"/>
+          <ATTRIBUTE NAME="Lookup caching enabled" VALUE="YES"/>
+          <ATTRIBUTE NAME="Lookup cache persistent" VALUE="NO"/>
+          <ATTRIBUTE NAME="Lookup cache recache from database" VALUE="NO"/>
+          <ATTRIBUTE NAME="Lookup cache size" VALUE="Auto"/>
+        </SESSINSTANCENAME>
+        
+        <!-- SESSION CONFIGURATION -->
+        <SESSIONEXTENSION DSQINSTNAME="s_m_BMO_Balance_ETL" DSQINSTTYPE="Session Config" 
+                          NAME="General Options" SUBTYPE="GENERAL" TRANSFORMATIONTYPE="Session Config">
+          
+          <!-- Performance Settings -->
+          <ATTRIBUTE NAME="Commit Interval" VALUE="10000"/>
+          <ATTRIBUTE NAME="Commit Type" VALUE="Target Based"/>
+          <ATTRIBUTE NAME="DTM Buffer Size" VALUE="Auto"/>
+          <ATTRIBUTE NAME="Collect performance data" VALUE="NO"/>
+          <ATTRIBUTE NAME="Write Backward Compatible Session Log File" VALUE="NO"/>
+          
+          <!-- Error Handling -->
+          <ATTRIBUTE NAME="Stop on errors" VALUE="1"/>
+          <ATTRIBUTE NAME="Override tracing" VALUE="Normal"/>
+          <ATTRIBUTE NAME="On success email" VALUE=""/>
+          <ATTRIBUTE NAME="On failure email" VALUE=""/>
+          
+          <!-- Recovery Settings -->
+          <ATTRIBUTE NAME="Save session log by" VALUE="Session runs"/>
+          <ATTRIBUTE NAME="Save session log for these runs" VALUE="1"/>
+          <ATTRIBUTE NAME="Session Log File Name" VALUE="s_m_BMO_Balance_ETL.log"/>
+          <ATTRIBUTE NAME="Session Log File Directory" VALUE="$PMSessionLogDir"/>
+          
+          <!-- Advanced Settings -->
+          <ATTRIBUTE NAME="Pre-session success command" VALUE=""/>
+          <ATTRIBUTE NAME="Pre-session failure command" VALUE=""/>
+          <ATTRIBUTE NAME="Post-session success command" VALUE=""/>
+          <ATTRIBUTE NAME="Post-session failure command" VALUE=""/>
+          
+          <!-- Date/Time Settings -->
+          <ATTRIBUTE NAME="Parameter Filename" VALUE="BMO_Balance_ETL.param"/>
+          <ATTRIBUTE NAME="Enable high precision" VALUE="NO"/>
+          <ATTRIBUTE NAME="Datetime format string" VALUE="MM/DD/YYYY HH24:MI:SS.US"/>
+          
+        </SESSIONEXTENSION>
+        
+        <!-- CONNECTION INFORMATION -->
+        <CONNECTIONINFO CONNECTIONNAME="$PMSourceConnection" CONNECTIONTYPE="FlatFile" 
+                        CONNECTSTRING="$PMSourceFileDir"/>
+        <CONNECTIONINFO CONNECTIONNAME="$PMTargetConnection" CONNECTIONTYPE="Oracle" 
+                        CONNECTSTRING="$PMTargetConnectionString"/>
+        
+      </SESSION>
+      
+    </FOLDER>
+  </REPOSITORY>
+</POWERMART>
