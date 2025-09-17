@@ -1,0 +1,10 @@
+{
+  "SOURCE_FILE_DIR": "/data/bmo/source/balance",
+  "SOURCE_FILENAME": "mrp0455_inv_gl.txt",
+  "SUCCESS_EMAIL_LIST": "bmo-etl-success@company.com",
+  "FAILURE_EMAIL_LIST": "bmo-etl-failure@company.com,bmo-etl-support@company.com",
+  "ETL_SUPPORT_EMAIL": "bmo-etl-support@company.com",
+  "DBA_SUPPORT_EMAIL": "bmo-dba-support@company.com",
+  "INFRA_SUPPORT_EMAIL": "bmo-infra-support@company.com",
+  "ONCALL_SUPPORT_PHONE": "+1-800-YOUR-HELP"
+}

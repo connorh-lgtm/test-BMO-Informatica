@@ -1,0 +1,17 @@
+# Apache Airflow BMO Balance ETL Requirements
+# Core Airflow with Oracle provider
+
+apache-airflow==2.7.0
+apache-airflow-providers-oracle==3.7.0
+pandas==2.0.3
+sqlalchemy==1.4.48
+cx-Oracle==8.3.0
+python-dotenv==1.0.0
+
+# Additional data processing libraries
+numpy==1.24.3
+pytz==2023.3
+
+# Development and testing
+pytest==7.4.0
+pytest-airflow==0.1.0

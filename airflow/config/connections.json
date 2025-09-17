@@ -1,0 +1,17 @@
+{
+  "oracle_bmo_connection": {
+    "conn_type": "oracle",
+    "description": "BMO Oracle Database Connection for Balance ETL",
+    "host": "${DB_HOST}",
+    "port": "${DB_PORT}",
+    "schema": "BMO_FINANCIAL",
+    "login": "${DB_USERNAME}",
+    "password": "${DB_PASSWORD}",
+    "extra": {
+      "service_name": "${DB_SERVICE_NAME}",
+      "encoding": "UTF-8",
+      "nencoding": "UTF-8",
+      "threaded": true
+    }
+  }
+}
